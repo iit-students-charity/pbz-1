@@ -66,7 +66,7 @@ WHERE Специальность LIKE '%ЭВМ%';
 -- 13
 SELECT subj.КодовыйНомерПредмета
 FROM (
-  SELECT subject.КодовыйНомерПредмета, COUNT(*)
+  SELECT subject.КодовыйНомерПредмета, COUNT(DISTINCT КодовыйНомерГруппы)
   FROM subject
   JOIN teacher_subject_group
     ON subject.КодовыйНомерПредмета = teacher_subject_group.КодовыйНомерПредмета
@@ -100,11 +100,14 @@ WHERE ЛичныйНомер IN (
   )
 );
 -- 15
-SELECT DISTINCT subject.*
+SELECT subject.*
 FROM subject
-JOIN teacher_subject_group
+EXCEPT
+SELECT subject.*
+FROM teacher_subject_group
+JOIN subject
   ON subject.КодовыйНомерПредмета = teacher_subject_group.КодовыйНомерПредмета
-WHERE NOT teacher_subject_group.ЛичныйНомер = '221Л';
+WHERE teacher_subject_group.ЛичныйНомер = '221Л';
 -- 16
 SELECT subject.*
 FROM subject
@@ -137,7 +140,7 @@ JOIN teacher_subject_group
   ON student_group.КодовыйНомерГруппы = teacher_subject_group.КодовыйНомерГруппы
 JOIN teacher
   ON teacher.ЛичныйНомер = teacher_subject_group.ЛичныйНомер
-WHERE teacher.Специальность = student_group.Специальность;
+WHERE teacher.Специальность LIKE student_group.Специальность;
 -- 20
 SELECT DISTINCT teacher.ЛичныйНомер
 FROM teacher
@@ -203,12 +206,16 @@ WHERE NOT student_group.КодовыйНомерГруппы IN (
   )
 );
 -- 26
-SELECT DISTINCT teacher.ЛичныйНомер
-FROM teacher
-JOIN teacher_subject_group
-  ON teacher.ЛичныйНомер = teacher_subject_group.ЛичныйНомер
+SELECT DISTINCT teacher_subject_group.ЛичныйНомер FROM teacher_subject_group
 JOIN student_group
   ON student_group.КодовыйНомерГруппы = teacher_subject_group.КодовыйНомерГруппы
-JOIN subject
-  ON subject.КодовыйНомерПредмета = teacher_subject_group.КодовыйНомерПредмета
-WHERE NOT subject.КодовыйНомерПредмета = '12П' AND student_group.НазваниеГруппы = 'Э-15';
+WHERE student_group.НазваниеГруппы = 'Э-15' AND  teacher_subject_group.ЛичныйНомер NOT IN (
+  SELECT teacher_subject_group.ЛичныйНомер
+  FROM teacher_subject_group
+  WHERE teacher_subject_group.КодовыйНомерПредмета = '12П'
+);
+
+
+
+13 19 26
+15
